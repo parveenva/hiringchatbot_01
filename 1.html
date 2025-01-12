@@ -3,66 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webchat</title>
+    <title>Responsive Chatbox</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh;
-            background-color: #f9f9f9;
+            font-family: 'Arial', sans-serif;
+            background-color: #f7f9fc;
         }
-        #chatbox {
-            width: 400px; height: 600px; border: 1px solid #ccc; border-radius: 10px; background: #fff;
-            display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        .chatbox {
+            width: 100%;
+            max-width: 500px;
+            height: 80vh;
+            margin: 20px auto;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background-color: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        #messages {
-            flex: 1; padding: 10px; overflow-y: auto; border-bottom: 1px solid #ddd;
+        .chat-header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 15px;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            text-align: center;
         }
-        #messages div { margin: 5px 0; }
-        .user { text-align: right; color: #4a90e2; }
-        .bot { text-align: left; color: #555; }
-        #inputArea {
-            display: flex; padding: 10px; gap: 5px;
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
         }
-        #userInput {
-            flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 5px;
+        .chat-messages .message {
+            margin-bottom: 10px;
+            max-width: 75%;
+            padding: 10px 15px;
+            border-radius: 10px;
+            line-height: 1.5;
         }
-        #sendBtn {
-            padding: 8px 15px; border: none; background: #4a90e2; color: #fff; border-radius: 5px; cursor: pointer;
+        .chat-messages .message.user {
+            background-color: #007bff;
+            color: #fff;
+            margin-left: auto;
+            text-align: right;
+        }
+        .chat-messages .message.bot {
+            background-color: #f1f1f1;
+            color: #333;
+            text-align: left;
+        }
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .chat-input button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
-    <div id="chatbox">
-        <div id="messages"></div>
-        <div id="inputArea">
-            <input type="text" id="userInput" placeholder="Type a message..." />
+    <div class="chatbox">
+        <div class="chat-header">
+            <h5>Chat with Us</h5>
+        </div>
+        <div class="chat-messages" id="messages">
+            <!-- Messages will appear here -->
+        </div>
+        <div class="chat-input">
+            <input type="text" id="userInput" placeholder="Type a message...">
             <button id="sendBtn">Send</button>
         </div>
     </div>
 
-    <script>
-        const webhookUrl = "https://hook.us2.make.com/4nnlunswpkjyaxpqumkefr2xm57h8x4n"; // Replace with your Make.com webhook URL
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 
+    <script>
         const messagesDiv = document.getElementById("messages");
         const inputField = document.getElementById("userInput");
         const sendButton = document.getElementById("sendBtn");
+        const webhookUrl = "https://hook.make.com/your-webhook-url"; // Replace with your Make webhook URL
 
-        // Function to add a message to the chat
         function addMessage(content, sender = "bot") {
             const message = document.createElement("div");
-            message.className = sender; // "user" or "bot"
+            message.className = `message ${sender}`;
             message.textContent = content;
             messagesDiv.appendChild(message);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight; // Auto-scroll
+            messagesDiv.scrollTop = messagesDiv.scrollHeight; // Auto-scroll to the latest message
         }
 
-        // Send user message to Make.com webhook
         async function sendMessage() {
             const userMessage = inputField.value.trim();
             if (!userMessage) return;
 
-            addMessage(userMessage, "user"); // Display user message
-            inputField.value = ""; // Clear input
+            addMessage(userMessage, "user");
+            inputField.value = ""; // Clear input field
 
             try {
                 const response = await fetch(webhookUrl, {
@@ -70,19 +119,14 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ message: userMessage })
                 });
-
                 const data = await response.json();
-                addMessage(data.reply || "No response from bot."); // Display bot response
+                addMessage(data.reply || "Sorry, I couldn't understand that.");
             } catch (error) {
-                addMessage("Error connecting to the bot. Please try again later.");
-                console.error("Error:", error);
+                addMessage("Error connecting to the server. Please try again later.");
             }
         }
 
-        // Handle Send Button Click
         sendButton.addEventListener("click", sendMessage);
-
-        // Handle Enter Key Press
         inputField.addEventListener("keypress", (event) => {
             if (event.key === "Enter") sendMessage();
         });
